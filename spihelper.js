@@ -1509,7 +1509,7 @@ async function spiHelper_archiveCase() {
 				}
 				const newArchiveName = spiHelper_getArchiveName() + '/' + archiveId;
 				await spiHelper_movePage(spiHelper_getArchiveName(), newArchiveName, 'Moving archive to avoid exceeding post expand size limit', false);
-				await spiHelper_editPage(spiHelper_getArchiveName(), '', 'Removing redirect', false, 'nochange');
+				
 			}
 			// Need an await here - if we have multiple sections archiving we don't want
 			// to stomp on each other
@@ -1535,7 +1535,7 @@ async function spiHelper_archiveCaseSection(sectionId) {
 
 	// Update the archive
 	let archivetext = await spiHelper_getPageText(spiHelper_getArchiveName(), true);
-	if (!archivetext) {
+	if (!archivetext || archivetext.startsWith("#REDIRECT")) {
 		archivetext = '__' + 'TOC__\n{{SPIarchive notice|1=' + spiHelper_caseName + '}}\n{{SPIpriorcases}}';
 	} else {
 		archivetext = archivetext.replace(/<br\s*\/>\s*{{SPIpriorcases}}/gi, '\n{{SPIpriorcases}}'); // fmt fix whenever needed.
