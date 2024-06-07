@@ -1,8 +1,8 @@
 // <nowiki>
 // @ts-check
 // GeneralNotability's rewrite of Tim's SPI helper script
-// With contributions from Dreamy Jazz, L235, Tamzin, TheresNoTime, and Xiplus
-// v2.8.2 "Cabal Decree"
+// With contributions from 0xDeadbeef, DatGuy, Dreamy Jazz, L235, Tamzin, TheresNoTime, and Xiplus
+// v2.9.1 "No sorcery threats"
 
 /* global mw, $, importStylesheet, importScript, displayMessage, spiHelperCustomOpts */
 
@@ -602,8 +602,8 @@ async function spiHelperGenerateForm () {
   spiHelperActionsSelected.Case_act = $('#spiHelper_Case_Action', $topView).prop('checked')
   spiHelperActionsSelected.Block = $('#spiHelper_BlockTag', $topView).prop('checked')
   spiHelperActionsSelected.Link = $('#spiHelper_userInfo', $topView).prop('checked')
-  spiHelperActionsSelected.Note = $('#spiHelper_Comment', $topView).prop('checked')
   spiHelperActionsSelected.Close = $('#spiHelper_Close', $topView).prop('checked')
+  spiHelperActionsSelected.Note = $('#spiHelper_Comment', $topView).prop('checked') || spiHelperActionsSelected.Case_act || spiHelperActionsSelected.Block || spiHelperActionsSelected.Close
   spiHelperActionsSelected.Rename = $('#spiHelper_Move', $topView).prop('checked')
   spiHelperActionsSelected.Archive = $('#spiHelper_Archive', $topView).prop('checked')
   spiHelperActionsSelected.SpiMgmt = $('#spiHelper_SpiMgmt', $topView).prop('checked')
@@ -1079,7 +1079,7 @@ async function spiHelperTagUser (tagEntry, tagNonLocalAccounts, sockmaster, altm
     if (altmasterName && isMaster) {
       // If we have an altmaster and we're the master, swap a few values around
       sockmasterName = altmasterName
-      tag = altmasterTag
+      tag = altmasterTag === 'suspected' ? 'blocked' : altmasterTag
       altmasterName = ''
       altmasterTag = ''
       tagText += '\n'
@@ -1803,7 +1803,7 @@ async function spiHelperLog (logString) {
  */
 async function spiHelperPostRenameCleanup (oldCasePage) {
   'use strict'
-  const replacementArchiveNotice = '<noinclude>__TOC__</noinclude>\n' + spiHelperMakeNewArchiveNotice(spiHelperCaseName, spiHelperArchiveNoticeParams) + '\n{{SPIpriorcases}}'
+  const replacementArchiveNotice = spiHelperMakeNewArchiveNotice(spiHelperCaseName, spiHelperArchiveNoticeParams)
   const oldCaseName = oldCasePage.replace(/Wikipedia:Sockpuppet investigations\//g, '')
 
   // Update previous SPI redirects to this location
@@ -3601,8 +3601,6 @@ function spiHelperIsClerk () {
  * @return {string} Normalized username
  */
 function spiHelperNormalizeUsername (username) {
-  // Replace underscores with spaces
-  username = username.replace(/_/g, ' ')
   // Get rid of bad hidden characters
   username = username.replace(spiHelperHiddenCharNormRegex, '')
   // Remove leading and trailing spaces
@@ -3610,9 +3608,10 @@ function spiHelperNormalizeUsername (username) {
   if (mw.util.isIPAddress(username, true)) {
     // For IP addresses, capitalize them (really only applies to IPv6)
     username = username.toUpperCase()
-  } else {
+  } else if (username) {
     // For actual usernames, make sure the first letter is capitalized
-    username = username.charAt(0).toUpperCase() + username.slice(1)
+    // Ensure consistent case conversions with PHP as per https://phabricator.wikimedia.org/T292824
+    username = new mw.Title(username).getMainText()
   }
   return username
 }
