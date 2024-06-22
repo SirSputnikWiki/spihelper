@@ -311,7 +311,7 @@ const spiHelperTopViewHTML = `
     </li>
     <li id="spiHelper_blockLine" class="spiHelper_adminClerkClass">
       <input type="checkbox" name="spiHelper_BlockTag" id="spiHelper_BlockTag" />
-      <label for="spiHelper_BlockTag">Block/tag socks</label>
+      <label id="spiHelper_blockLabel" for="spiHelper_BlockTag">Block/tag socks</label>
     </li>
     <li id="spiHelper_userInfoLine" class="spiHelper_singleCaseOnly">
       <input type="checkbox" name="spiHelper_userInfo" id="spiHelper_userInfo" />
@@ -3126,8 +3126,8 @@ async function spiHelperGenerateBlockTableLine (name, defaultblock, id) {
 
 async function spiHelperInitMobileBlockTable() {
   'use strict'
-
-  $('#spiHelper_blockTable th.spiHelper_adminClass').hide()
+  if(!spiHelperIsAdmin())
+    $('#spiHelper_blockTable .spiHelper_adminClass').hide()
   const $allRow=$('#spiHelper_block_allusers')
   const $adminCells=$allRow.find('.spiHelper_adminClass')
   $adminCells.detach()
