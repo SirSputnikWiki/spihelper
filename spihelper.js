@@ -756,17 +756,20 @@ async function spiHelperGenerateForm () {
   }
   if (spiHelperActionsSelected.Block || spiHelperActionsSelected.Link) {
     // eslint-disable-next-line no-useless-escape
+    
     const checkuserRegex = /{{\s*check(?:user|ip)\s*\|\s*(?:1=)?\s*([^\|}]*?)\s*(?:\|master name\s*=\s*.*)?}}/gi
     const results = pagetext.match(checkuserRegex)
     const likelyusers = []
     const likelyips = []
     const possibleusers = []
     const possibleips = []
-    likelyusers.push(spiHelperCaseName)
-    if (results) {
-      for (let i = 0; i < results.length; i++) {
-        const username = spiHelperNormalizeUsername(results[i].replace(checkuserRegex, '$1'))
-        const isIP = mw.util.isIPAddress(username, true)
+    likelyusers.push(spiHelperCaseName)    
+
+    
+    let socklist = $(`a[href$="section=${spiHelperSectionId}"]`).parents().not(':has(hr)').nextUntil('hr').find('.cuEntry').find('a:first')
+    for(let element of socklist) {
+      let username = spiHelperNormalizeUsername($(element).text())
+      const isIP = mw.util.isIPAddress(username, true)
         if (!isIP && !likelyusers.includes(username)) {
           likelyusers.push(username)
         } else if (isIP && !likelyips.includes(username)) {
@@ -776,39 +779,9 @@ async function spiHelperGenerateForm () {
           }
           likelyips.push(username)
         }
-      }
     }
-    const unnamedParameterRegex = /^\s*\d+\s*$/i
-    const socklistResults = pagetext.match(/{{\s*sock\s?list\s*([^}]*)}}/gi)
-    if (socklistResults) {
-      for (let i = 0; i < socklistResults.length; i++) {
-        const socklistMatch = socklistResults[i].match(/{{\s*sock\s?list\s*([^}]*)}}/i)[1]
-        // First split the text into parts based on the presence of a |
-        const socklistArguments = socklistMatch.split('|')
-        for (let j = 0; j < socklistArguments.length; j++) {
-          // Now try to split based on "=", if wasn't able to it means it's an unnamed argument
-          const splitArgument = socklistArguments[j].split('=')
-          let username = ''
-          if (splitArgument.length === 1) {
-            username = spiHelperNormalizeUsername(splitArgument[0])
-          } else if (unnamedParameterRegex.test(splitArgument[0])) {
-            username = spiHelperNormalizeUsername(splitArgument.slice(1).join('='))
-          }
-          if (username !== '') {
-            const isIP = mw.util.isIPAddress(username, true)
-            if (isIP && !likelyips.includes(username)) {
-              if (spiHelperSettings.displayIPv6As64 && mw.util.isIPv6Address(username, false)) {
-                likelyips.push(username.split(':').slice(0, 4).concat('0', '0', '0', '0').join(':') + '/64')
-                continue
-              }
-              likelyips.push(username)
-            } else if (!isIP && !likelyusers.includes(username)) {
-              likelyusers.push(username)
-            }
-          }
-        }
-      }
-    }
+    
+
     // eslint-disable-next-line no-useless-escape
     const userRegex = /{{[^\|}{]*?(?:user|vandal|IP|noping)[^\|}{]*?\|\s*(?:1=)?\s*([^\|}]*?)\s*}}/gi
     const userresults = pagetext.match(userRegex)
