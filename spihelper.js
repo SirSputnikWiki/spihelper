@@ -928,7 +928,7 @@ async function updateForRole (view) {
  * Archives everything on the page that's eligible for archiving
  */
 async function spiHelperOneClickArchive () {
-  'use strict'
+  'use strict'  
   spiHelperActiveOperations.set('oneClickArchive', 'running')
 
   const pagetext = await spiHelperGetPageText(spiHelperPageName, false)
@@ -1671,11 +1671,11 @@ async function spiHelperPerformActions () {
     // Archive the case
     if (spiHelperSectionId === null) {
       // Archive the whole case
-      logMessage += '\n** Archived case'
+      logMessage += '\n** Archived case'      
       await spiHelperArchiveCase()
     } else {
       // Just archive the selected section
-      logMessage += '\n** Archived section'
+      logMessage += '\n** Archived section'      
       await spiHelperArchiveCaseSection(spiHelperSectionId)
     }
   } else if (spiHelperActionsSelected.Rename && renameTarget) {
@@ -1817,8 +1817,8 @@ async function spiHelperPostMergeCleanup (originalText) {
 /**
  * Archive all closed sections of a case
  */
-async function spiHelperArchiveCase () {
-  'use strict'
+async function spiHelperArchiveCase () {  
+  'use strict'  
   let i = 0
   let previousRev = 0
   while (i < spiHelperCaseSections.length) {
@@ -1864,7 +1864,7 @@ async function spiHelperArchiveCase () {
         await spiHelperEditPage(spiHelperGetArchiveName(), '', 'Removing redirect', false, 'nochange')
       }
       // Need an await here - if we have multiple sections archiving we don't want
-      // to stomp on each other
+      // to stomp on each other      
       await spiHelperArchiveCaseSection(sectionId)
       // need to re-fetch caseSections since the section numbering probably just changed,
       // also reset our index
@@ -1883,10 +1883,18 @@ async function spiHelperArchiveCaseSection (sectionId) {
   'use strict'
   let sectionText = await spiHelperGetPageText(spiHelperPageName, true, sectionId)
   sectionText = sectionText.replace(spiHelperCaseStatusRegex, '')
-  const newarchivetext = sectionText.substring(sectionText.search(spiHelperSectionRegex))
+  const newarchivetext = sectionText.substring(sectionText.search(spiHelperSectionRegex))  
+  let archivetext = await spiHelperGetPageText(spiHelperGetArchiveName(), true)  
+
+  const $statusLine = $('<li>').appendTo($('#spiHelper_status', document))
+  //Edit conflict check
+  if(archivetext.includes(sectionText)) {
+    $statusLine.addClass('spihelper-errortext').append('b').text('Looks like the page has been archived already')
+    return      
+  }
+
 
   // Update the archive
-  let archivetext = await spiHelperGetPageText(spiHelperGetArchiveName(), true)
   if (!archivetext) {
     archivetext = '__TOC__\n{{SPIarchive notice|1=' + spiHelperCaseName + '}}\n{{SPIpriorcases}}'
   } else {
@@ -1897,8 +1905,7 @@ async function spiHelperArchiveCaseSection (sectionId) {
     'Archiving case section from [[' + spiHelperGetInterwikiPrefix() + spiHelperPageName + ']]',
     false, spiHelperSettings.watchArchive, spiHelperSettings.watchArchiveExpiry)
 
-  if (!archiveSuccess) {
-    const $statusLine = $('<li>').appendTo($('#spiHelper_status', document))
+  if (!archiveSuccess) {    
     $statusLine.addClass('spihelper-errortext').append('b').text('Failed to update archive, not removing section from case page')
     return
   }
