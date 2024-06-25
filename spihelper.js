@@ -1448,7 +1448,7 @@ async function spiHelperPerformActions () {
     if (needsAltmaster) {
       altmaster = prompt('Please enter the name of the alternate sockmaster: ', spiHelperCaseName) || spiHelperCaseName
     }
-
+    
     const tagNonLocalAccounts = $('#spiHelper_tagAccountsWithoutLocalAccount', $actionView).prop('checked')
     let blockingPromises
     if (spiHelperIsAdmin()) {
@@ -1486,10 +1486,10 @@ async function spiHelperPerformActions () {
       let needsPurge = false
       // True for each we need to check if the respective category (e.g.
       // "Suspected sockpuppets of Test") exists
-      const checkConfirmedCat = spiHelperTags.some((tagEntry) => tagEntry.tag === 'proven')
+      const checkConfirmedCat = spiHelperTags.some((tagEntry) => tagEntry.tag === 'proven') || spiHelperTags.some((tagEntry) => tagEntry.tag === 'confirmed')
       const checkSuspectedCat = spiHelperTags.some((tagEntry) => tagEntry.tag === 'blocked')
       const checkAltSuspectedCat = altmaster !== '' ? spiHelperTags.some((tagEntry) => tagEntry.altmasterTag !== '' && tagEntry.altmasterTag === 'suspected') : false
-      const checkAltConfirmedCat = altmaster !== '' ? spiHelperTags.some((tagEntry) => tagEntry.altmasterTag !== '' && tagEntry.altmasterTag === 'proven') : false
+      const checkAltConfirmedCat = altmaster !== '' ? spiHelperTags.some((tagEntry) => tagEntry.altmasterTag !== '' && tagEntry.altmasterTag === 'proven') || spiHelperTags.some((tagEntry) => tagEntry.altmasterTag !== '' && tagEntry.altmasterTag === 'confirmed') : false
 
       if (checkAltConfirmedCat) {
         const catname = 'Category:Wikipedia sockpuppets of ' + altmaster
